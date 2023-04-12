@@ -115,57 +115,65 @@ def evaluate(board, player):
     return score
 
 
-def alphabeta(cur_state, player_to_move, depth, alpha, beta):
-    valid_move = get_valid_move(cur_state, player_to_move)
+def get_new_state(cur_state, player, move):
+    new_state = deepcopy(cur_state)
+    make_move(new_state, player, move)
+    return new_state
+
+
+def alphabeta(cur_state, player, depth, alpha, beta, maximizing_player):
+    valid_move = get_valid_move(cur_state, player)
 
     if depth == 0 or not valid_move:
-        return evaluate(cur_state, player_to_move)
+        return evaluate(cur_state, player)
 
-    if player_to_move == -1:
-        max_score = -math.inf
-
+    # Nếu đang tìm kiếm cho người chơi tối đa (agent)
+    if maximizing_player:
+        max_val = -math.inf
+        # Thử các nước đi có thể có
         for move in valid_move:
-            new_board = deepcopy(cur_state)
-            make_move(new_board, player_to_move, move)
+            # Tạo một trạng thái mới dựa trên nước đi hiện tại
+            new_state = get_new_state(cur_state, player, move)
 
-            opponent = -player_to_move
-            score = alphabeta(new_board, opponent, depth - 1, alpha, beta)
-            max_score = max(max_score, score)
+            # Tìm kiếm đệ quy trên trạng thái mới
+            val = alphabeta(new_state, player, depth - 1, alpha, beta, False)
 
-            alpha = max(alpha, max_score)
-            if alpha >= beta:
+            # Cập nhật giá trị tối đa và alpha
+            max_val = max(max_val, val)
+            alpha = max(alpha, max_val)
+
+            # Kiểm tra điều kiện cắt tỉa
+            if beta <= alpha:
                 break
 
-        return max_score
-
+        return max_val
+    # Nếu đang tìm kiếm cho người chơi tối thiểu
     else:
-        min_score = math.inf
+        min_val = math.inf
 
         for move in valid_move:
-            new_board = deepcopy(cur_state)
-            make_move(new_board, 1, move)
+            new_state = get_new_state(cur_state, player, move)
 
-            opponent = -player_to_move
-            score = alphabeta(new_board, opponent, depth - 1, alpha, beta)
-            min_score = min(min_score, score)
+            val = alphabeta(new_state, player, depth - 1, alpha, beta, True)
 
-            beta = min(beta, min_score)
-            if alpha >= beta:
+            # Cập nhật giá trị tối thiểu và beta
+            min_val = min(min_val, val)
+            beta = min(beta, min_val)
+
+            if beta <= alpha:
                 break
 
-        return min_score
+        return min_val
 
 
-def get_best_move(cur_state, player_to_move, depth=5):
+def get_best_move(cur_state, player, depth=5):
     best_move = None
     best_score = -math.inf
     alpha, beta = -math.inf, math.inf
 
-    for move in get_valid_move(cur_state, player_to_move):
-        new_board = deepcopy(cur_state)
-        make_move(new_board, player_to_move, move)
-
-        score = alphabeta(new_board, player_to_move, depth - 1, alpha, beta)
+    for move in get_valid_move(cur_state, player):
+        new_state = get_new_state(cur_state, player, move)
+        score = alphabeta(new_state, player, depth - 1, alpha, beta, True)
         if score > best_score:
             best_move, best_score = move, score
 
