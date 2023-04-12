@@ -94,8 +94,10 @@ if __name__ == "__main__":
         [0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0],
     ]
-    player = 1
+
     mode = input("Select modes (1 or 2): ")
+    turn = input("Choose your turn (1 or 2): ")
+    player = 1 if turn == "1" else -1
     # f = open("time.txt", "w")
 
     # Khởi tạo game

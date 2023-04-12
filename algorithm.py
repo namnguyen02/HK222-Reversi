@@ -2,7 +2,7 @@ from copy import deepcopy
 import math
 
 
-# Các hàm chung (class Reversi)
+# Các hàm chung
 def is_valid_move(board, player, move):
     x, y = move
 
@@ -84,7 +84,7 @@ def get_score(board):
     return score_dict
 
 
-# Các hàm cho agent (class AI)
+# Các hàm cho agent
 def evaluate(board, player):
     score = 0
 
