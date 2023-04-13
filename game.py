@@ -96,7 +96,8 @@ if __name__ == "__main__":
     ]
     player = 1
     turn = input("Choose your turn (B or W): ")
-    # f = open("time.txt", "w")
+    f = open("agent_time.txt", "w")
+    total_agent_time = 0
 
     # Khởi tạo game
     pygame.init()
@@ -127,11 +128,13 @@ if __name__ == "__main__":
                     print("Black" if player == 1 else "White", "has no valid move.")
                     player = -player
             elif turn == "B" and player == -1 or turn == "W" and player == 1:
-                # start_time = time.time()
+                start_time = time.time()
                 best_move = select_move(board, player)
+                agent_time = round(time.time() - start_time, 6)
+                total_agent_time += agent_time
+                f.write(str(agent_time) + "\n")
                 if best_move:
                     make_move(board, player, best_move)
-                    # f.write(str(round(time.time() - start_time, 4)) + "\n")
                 else:
                     print("Black" if player == 1 else "White", "has no valid move.")
                 player = -player
@@ -147,4 +150,5 @@ if __name__ == "__main__":
 
     pygame.quit()
 
-    # f.close()
+    f.write("Total: " + str(total_agent_time) + "\n")
+    f.close()
