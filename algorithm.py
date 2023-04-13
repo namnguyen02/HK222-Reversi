@@ -9,16 +9,7 @@ def is_valid_move(board, player, move):
     if not board[x][y] == 0:
         return False
 
-    directions = [
-        (0, 1),
-        (1, 0),
-        (0, -1),
-        (-1, 0),
-        (1, 1),
-        (-1, -1),
-        (1, -1),
-        (-1, 1),
-    ]
+    directions = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]
 
     for d in directions:
         c, r = x + d[0], y + d[1]
@@ -48,16 +39,7 @@ def make_move(board, player, move):
     x, y = move
     board[x][y] = player
 
-    directions = [
-        (0, 1),
-        (1, 0),
-        (0, -1),
-        (-1, 0),
-        (1, 1),
-        (-1, -1),
-        (1, -1),
-        (-1, 1),
-    ]
+    directions = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]
 
     for d in directions:
         c, r = x + d[0], y + d[1]
@@ -92,25 +74,28 @@ def evaluate(board, player):
     player_count = count[player]
     opponent_count = count[-player]
 
-    score += player_count - opponent_count
+    if player_count > opponent_count:
+        score += (player_count - opponent_count) * 10
+    elif player_count < opponent_count:
+        score -= (opponent_count - player_count) * 10
 
-    weight_board = [
-        [120, -20, 20, 5, 5, 20, -20, 120],
-        [-20, -40, -5, -5, -5, -5, -40, -20],
-        [20, -5, 15, 3, 3, 15, -5, 20],
-        [5, -5, 3, 3, 3, 3, -5, 5],
-        [5, -5, 3, 3, 3, 3, -5, 5],
-        [20, -5, 15, 3, 3, 15, -5, 20],
-        [-20, -40, -5, -5, -5, -5, -40, -20],
-        [120, -20, 20, 5, 5, 20, -20, 120],
+    position_values = [
+        [100, -20, 10, 5, 5, 10, -20, 100],
+        [-20, -50, -2, -2, -2, -2, -50, -20],
+        [10, -2, -1, -1, -1, -1, -2, 10],
+        [5, -2, -1, -1, -1, -1, -2, 5],
+        [5, -2, -1, -1, -1, -1, -2, 5],
+        [10, -2, -1, -1, -1, -1, -2, 10],
+        [-20, -50, -2, -2, -2, -2, -50, -20],
+        [100, -20, 10, 5, 5, 10, -20, 100],
     ]
 
     for i in range(8):
         for j in range(8):
             if board[i][j] == player:
-                score += weight_board[i][j]
+                score += position_values[i][j]
             elif board[i][j] == -player:
-                score -= weight_board[i][j]
+                score -= position_values[i][j]
 
     return score
 
