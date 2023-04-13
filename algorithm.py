@@ -174,6 +174,7 @@ def get_best_move(cur_state, player, depth=5):
     for move in get_valid_move(cur_state, player):
         new_state = get_new_state(cur_state, player, move)
         score = alphabeta(new_state, player, depth - 1, alpha, beta, True)
+
         if score > best_score:
             best_move, best_score = move, score
 

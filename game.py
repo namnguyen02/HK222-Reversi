@@ -35,7 +35,7 @@ RADIUS = SQUARE / 2 - SQUARE / 10
 WINDOW_SIZE = [SQUARE * 8 + MARGIN * 9, SQUARE * 8 + MARGIN * 9]
 
 
-def draw_board(board, player, mode):
+def draw_board(board, player, turn):
     for col in range(8):
         for row in range(8):
             # Vị trí của ô vuông
@@ -66,9 +66,9 @@ def draw_board(board, player, mode):
                 end_pos = (x + 5 * SQUARE / 8, y + SQUARE / 2)
 
                 # Vẽ đoạn thẳng
-                if player == 1:
+                if player == 1 and turn == "B":
                     pygame.draw.line(screen, BLACK, start_pos, end_pos, 2)
-                elif player == -1 and mode == "2":
+                elif player == -1 and turn == "W":
                     pygame.draw.line(screen, WHITE, start_pos, end_pos, 2)
 
     # pygame.display.flip()
@@ -94,10 +94,8 @@ if __name__ == "__main__":
         [0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0],
     ]
-
-    mode = input("Select modes (1 or 2): ")
-    turn = input("Choose your turn (1 or 2): ")
-    player = 1 if turn == "1" else -1
+    player = 1
+    turn = input("Choose your turn (B or W): ")
     # f = open("time.txt", "w")
 
     # Khởi tạo game
@@ -108,12 +106,15 @@ if __name__ == "__main__":
     done = False
     clock = pygame.time.Clock()
 
+    if turn == "W":
+        draw_board(board, player, turn)
+        pygame.time.wait(500)
+
     while not done:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 done = True
-
-            if player == 1 or mode == "2":
+            elif turn == "B" and player == 1 or turn == "W" and player == -1:
                 valid_move = get_valid_move(board, player)
                 if valid_move:
                     if event.type == pygame.MOUSEBUTTONDOWN:
@@ -125,18 +126,17 @@ if __name__ == "__main__":
                 else:
                     print("Black" if player == 1 else "White", "has no valid move.")
                     player = -player
-            else:
-                # pygame.time.wait(200)
+            elif turn == "B" and player == -1 or turn == "W" and player == 1:
                 # start_time = time.time()
                 best_move = select_move(board, player)
                 if best_move:
                     make_move(board, player, best_move)
                     # f.write(str(round(time.time() - start_time, 4)) + "\n")
                 else:
-                    print("While has no valid move.")
+                    print("Black" if player == 1 else "White", "has no valid move.")
                 player = -player
 
-        draw_board(board, player, mode)
+        draw_board(board, player, turn)
 
         clock.tick(60)
 
