@@ -1,5 +1,5 @@
 import pygame
-from algorithm import is_valid_move, get_valid_move, make_move, get_score, select_move
+from negamax import is_valid_move, get_valid_move, make_move, get_score, select_move
 import time
 
 
@@ -66,9 +66,9 @@ def draw_board(board, player, turn):
                 end_pos = (x + 5 * SQUARE / 8, y + SQUARE / 2)
 
                 # Vẽ đoạn thẳng
-                if player == 1 and turn == "B":
+                if player == 1 and turn == "b":
                     pygame.draw.line(screen, BLACK, start_pos, end_pos, 2)
-                elif player == -1 and turn == "W":
+                elif player == -1 and turn == "w":
                     pygame.draw.line(screen, WHITE, start_pos, end_pos, 2)
 
     # pygame.display.flip()
@@ -95,8 +95,8 @@ if __name__ == "__main__":
         [0, 0, 0, 0, 0, 0, 0, 0],
     ]
     player = 1
-    turn = input("Choose your turn (B or W): ")
-    f = open("agent_time.txt", "w")
+    turn = input("Choose your turn (b or w): ")
+    f = open("time.txt", "w")
     total_agent_time = 0
 
     # Khởi tạo game
@@ -107,7 +107,7 @@ if __name__ == "__main__":
     done = False
     clock = pygame.time.Clock()
 
-    if turn == "W":
+    if turn == "w":
         draw_board(board, player, turn)
         pygame.time.wait(500)
 
@@ -115,7 +115,7 @@ if __name__ == "__main__":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 done = True
-            elif turn == "B" and player == 1 or turn == "W" and player == -1:
+            elif turn == "b" and player == 1 or turn == "w" and player == -1:
                 valid_move = get_valid_move(board, player)
                 if valid_move:
                     if event.type == pygame.MOUSEBUTTONDOWN:
@@ -127,7 +127,7 @@ if __name__ == "__main__":
                 else:
                     print("Black" if player == 1 else "White", "has no valid move.")
                     player = -player
-            elif turn == "B" and player == -1 or turn == "W" and player == 1:
+            elif turn == "b" and player == -1 or turn == "w" and player == 1:
                 start_time = time.time()
                 best_move = select_move(board, player)
                 agent_time = round(time.time() - start_time, 6)
@@ -150,5 +150,5 @@ if __name__ == "__main__":
 
     pygame.quit()
 
-    f.write("Total: " + str(total_agent_time) + "\n")
+    f.write("Total: " + str(round(total_agent_time, 6)) + "\n")
     f.close()
