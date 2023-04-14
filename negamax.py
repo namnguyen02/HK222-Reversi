@@ -1,3 +1,4 @@
+import bisect
 import numpy as np
 
 
@@ -59,9 +60,9 @@ def get_valid_move(board, player):
 
 def get_score(board):
     score_dict = {-1: 0, 0: 0, 1: 0}
-    for c in range(8):
-        for r in range(8):
-            score_dict[board[c][r]] += 1
+    for i in range(8):
+        for j in range(8):
+            score_dict[board[i][j]] += 1
     return score_dict
 
 
@@ -81,14 +82,8 @@ def is_game_over(board):
 
 # CÁC HÀM CHO AGENT
 def evaluate(board, player):
-    score = 0
-    for i in range(8):
-        for j in range(8):
-            if board[i][j] == player:
-                score += 1
-            elif board[i][j] == -player:
-                score -= 1
-    return score
+    score = get_score(board)
+    return score[player] - score[-player]
 
 
 def negamax(board, player, depth, alpha, beta, trans_table):
@@ -100,7 +95,7 @@ def negamax(board, player, depth, alpha, beta, trans_table):
         return negamax(board, -player, depth - 1, -beta, -alpha, trans_table)
 
     best_score = -np.inf
-    for move in valid_moves:
+    for move in order_moves(valid_moves):
         new_board = np.copy(board)
         make_move(new_board, player, move)
 
@@ -120,6 +115,26 @@ def negamax(board, player, depth, alpha, beta, trans_table):
     return best_score
 
 
+def get_move_priority(move):
+    # Các nước đi ở giữa bàn cờ có độ ưu tiên cao hơn
+    x, y = move
+    priority = abs(x - 3.5) + abs(y - 3.5)
+
+    # Nếu nước đi góc hoặc cạnh, độ ưu tiên thấp hơn
+    if x == 0 or x == 7 or y == 0 or y == 7:
+        priority -= 1
+
+    return priority
+
+
+def order_moves(moves):
+    ordered_moves = []
+    for move in moves:
+        priority = get_move_priority(move)
+        bisect.insort(ordered_moves, (priority, move))
+    return [move for _, move in ordered_moves]
+
+
 def find_best_move(board, player, depth=5):
     alpha = -np.inf
     beta = np.inf
@@ -131,11 +146,7 @@ def find_best_move(board, player, depth=5):
 
     valid_moves = get_valid_move(board, player)
 
-    for move in valid_moves:
-        if move in [(0, 0), (0, 7), (7, 0), (7, 7)]:
-            return move
-
-    for move in valid_moves:
+    for move in order_moves(valid_moves):
         new_board = np.copy(board)
         make_move(new_board, player, move)
 

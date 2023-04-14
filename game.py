@@ -95,7 +95,7 @@ if __name__ == "__main__":
         [0, 0, 0, 0, 0, 0, 0, 0],
     ]
     player = 1
-    turn = input("Choose your turn (b or w): ")
+    turn = input("Choose your color (b or w): ")
     f = open("time.txt", "w")
     total_agent_time = 0
 
