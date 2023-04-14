@@ -4,21 +4,18 @@ import random
 
 
 def display_board(board):
-    print("   ", end="")
+    result = "  a b c d e f g h\n"
     for i in range(8):
-        print(i + 1, "  ", end="")
-    print()
-    print("  +---+---+---+---+---+---+---+---+")
-    for i in range(8):
-        print(chr(ord("a") + i), "|", end="")
+        result += str(i + 1) + "|"
         for j in range(8):
             if board[i][j] == 1:
-                print(" X ", end="|")
+                result += "\u25CF|"
             elif board[i][j] == -1:
-                print(" O ", end="|")
+                result += "\u25CB|"
             else:
-                print("   ", end="|")
-        print("\n  +---+---+---+---+---+---+---+---+")
+                result += " |"
+        result += "\n"
+    return result
 
 
 def check_game_over(board):
@@ -29,9 +26,9 @@ def check_game_over(board):
         return (
             "Tie"
             if score[1] == score[-1]
-            else "Player X Wins"
+            else "Black Wins"
             if score[1] > score[-1]
-            else "Player O Wins"
+            else "White Wins"
         )
 
     # Trường hợp cả hai không có nước đi hợp lệ
@@ -56,37 +53,39 @@ if __name__ == "__main__":
     player = 1
     total_agent_time = 0
 
-    turn = input("Choose turn for agent (X or O): ")
-    f = open("time.txt", "w")
+    turn = input("Choose color for agent (b or w): ")
+    ft = open("time.txt", "w")
+    fd = open("demo.txt", "w")
 
-    # display_board(board)
+    fd.write(display_board(board) + "\n")
 
     while True:
-        if turn == "X" and player == -1 or turn == "O" and player == 1:
+        if turn == "b" and player == -1 or turn == "w" and player == 1:
             valid_move = get_valid_move(board, player)
             if valid_move:
                 make_move(board, player, random.choice(valid_move))
             else:
-                print("Player X" if player == 1 else "Player O", "has no valid move.")
+                print("Black" if player == 1 else "White", "has no valid move.")
             player = -player
-        elif turn == "X" and player == 1 or turn == "O" and player == -1:
+        elif turn == "b" and player == 1 or turn == "w" and player == -1:
             start_time = time.time()
             best_move = select_move(board, player)
             agent_time = round(time.time() - start_time, 6)
             total_agent_time += agent_time
-            f.write(str(agent_time) + "\n")
+            ft.write(str(agent_time) + "\n")
             if best_move:
                 make_move(board, player, best_move)
             else:
-                print("Player X" if player == 1 else "Player O", "has no valid move.")
+                print("Black" if player == 1 else "White", "has no valid move.")
             player = -player
 
-        # display_board(board)
+        fd.write(display_board(board) + "\n")
 
         result = check_game_over(board)
         if result:
             print(result)
             break
 
-    f.write("\nTotal: " + str(round(total_agent_time, 6)) + "\n")
-    f.close()
+    ft.write("\nTotal: " + str(round(total_agent_time, 6)) + "\n")
+    ft.close()
+    fd.close()

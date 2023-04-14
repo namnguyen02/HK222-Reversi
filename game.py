@@ -1,5 +1,5 @@
 import pygame
-from negamax import is_valid_move, get_valid_move, make_move, get_score, select_move
+from negamax import get_valid_move, make_move, get_score, select_move
 import time
 
 
@@ -116,12 +116,12 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT:
                 done = True
             elif turn == "b" and player == 1 or turn == "w" and player == -1:
-                valid_move = get_valid_move(board, player)
-                if valid_move:
+                valid_moves = get_valid_move(board, player)
+                if valid_moves:
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         pos = pygame.mouse.get_pos()
                         move = get_position(pos)
-                        if is_valid_move(board, player, move):
+                        if move in valid_moves:
                             make_move(board, player, move)
                             player = -player
                 else:
