@@ -1,8 +1,11 @@
-import bisect
 import numpy as np
 
 
-# CÁC HÀM CHUNG CỦA REVERSI
+# CÁC HÀM CHUNG
+def is_valid_position(x, y):
+    return x >= 0 and x < 8 and y >= 0 and y < 8
+
+
 def is_valid_move(board, player, move):
     x, y = move
 
@@ -10,17 +13,16 @@ def is_valid_move(board, player, move):
         return False
 
     directions = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]
-
     for d in directions:
         c, r = x + d[0], y + d[1]
 
-        if 0 <= c < 8 and 0 <= r < 8 and board[c][r] == -player:
+        if is_valid_position(c, r) and board[c][r] == -player:
             c, r = c + d[0], r + d[1]
 
-            while 0 <= c < 8 and 0 <= r < 8 and board[c][r] == -player:
+            while is_valid_position(c, r) and board[c][r] == -player:
                 c, r = c + d[0], r + d[1]
 
-            if 0 <= c < 8 and 0 <= r < 8 and board[c][r] == player:
+            if is_valid_position(c, r) and board[c][r] == player:
                 return True
 
     return False
@@ -31,17 +33,16 @@ def make_move(board, player, move):
     board[x][y] = player
 
     directions = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]
-
     for d in directions:
         c, r = x + d[0], y + d[1]
 
-        if 0 <= c < 8 and 0 <= r < 8 and board[c][r] == -player:
+        if is_valid_position(c, r) and board[c][r] == -player:
             c, r = c + d[0], r + d[1]
 
-            while 0 <= c < 8 and 0 <= r < 8 and board[c][r] == -player:
+            while is_valid_position(c, r) and board[c][r] == -player:
                 c, r = c + d[0], r + d[1]
 
-            if 0 <= c < 8 and 0 <= r < 8 and board[c][r] == player:
+            if is_valid_position(c, r) and board[c][r] == player:
                 c, r = x + d[0], y + d[1]
 
                 while board[c][r] == -player:
@@ -51,18 +52,18 @@ def make_move(board, player, move):
 
 def get_valid_move(board, player):
     valid_moves = []
-    for i in range(8):
-        for j in range(8):
-            if is_valid_move(board, player, (i, j)):
-                valid_moves.append((i, j))
+    for x in range(8):
+        for y in range(8):
+            if is_valid_move(board, player, (x, y)):
+                valid_moves.append((x, y))
     return valid_moves
 
 
 def get_score(board):
-    score_dict = {-1: 0, 0: 0, 1: 0}
-    for i in range(8):
-        for j in range(8):
-            score_dict[board[i][j]] += 1
+    score_dict = {1: 0, -1: 0, 0: 0}
+    for x in range(8):
+        for y in range(8):
+            score_dict[board[x][y]] += 1
     return score_dict
 
 
@@ -80,89 +81,99 @@ def is_game_over(board):
     return False
 
 
-# CÁC HÀM CHO AGENT
-def evaluate(board, player):
-    score = get_score(board)
-    return score[player] - score[-player]
+# CÁC HÀM HEURISTIC
+def count_pieces(board, player):
+    count = 0
+    for x in range(8):
+        for y in range(8):
+            if board[x][y] == player:
+                count += 1
+    return count
 
 
-def negamax(board, player, depth, alpha, beta, trans_table):
+def parity_heuristic(board, player):
+    cur_count = count_pieces(board, player)
+    opp_count = count_pieces(board, -player)
+    return 100 * (cur_count - opp_count) / (cur_count + opp_count)
+
+
+def count_corners(board, player):
+    corners = [(0, 0), (0, 7), (7, 0), (7, 7)]
+    count = 0
+    for corner in corners:
+        if board[corner[0]][corner[1]] == player:
+            count += 1
+    return count
+
+
+def corner_heuristic(board, player):
+    cur_corners = count_corners(board, player)
+    opp_corners = count_corners(board, -player)
+    if cur_corners + opp_corners != 0:
+        return 100 * (cur_corners - opp_corners) / (cur_corners + opp_corners)
+    else:
+        return 0
+
+
+def count_corners_captured(board, player):
+    corners = [(0, 0), (0, 7), (7, 0), (7, 7)]
+    count = 0
+    for corner in corners:
+        if board[corner[0]][corner[1]] == player:
+            count += 1
+        elif board[corner[0]][corner[1]] == -player:
+            count -= 1
+    return count
+
+
+def corners_captured_heuristic(board, player):
+    cur_corners_captured = count_corners_captured(board, player)
+    opp_corners_captured = count_corners_captured(board, -player)
+    if cur_corners_captured + opp_corners_captured != 0:
+        return (
+            100
+            * (cur_corners_captured - opp_corners_captured)
+            / (cur_corners_captured + opp_corners_captured)
+        )
+    else:
+        return 0
+
+
+# CÁC HÀM ĐỂ CHỌN NƯỚC ĐI TỐT NHẤT
+def combined_heuristic(board, player):
+    weights = [0.1, 0.3, 0.2]  # Assign weights to each heuristic
+    h1 = parity_heuristic(board, player)
+    h2 = corner_heuristic(board, player)
+    h3 = corners_captured_heuristic(board, player)
+    combined_h = weights[0] * h1 + weights[1] * h2 + weights[2] * h3
+    return combined_h
+
+
+def negamax(board, player, depth, alpha, beta, killer_moves):
     if depth == 0 or is_game_over(board):
-        return evaluate(board, player)
+        return combined_heuristic(board, player), None
 
-    valid_moves = get_valid_move(board, player)
-    if not valid_moves:
-        return negamax(board, -player, depth - 1, -beta, -alpha, trans_table)
-
-    best_score = -np.inf
-    for move in order_moves(valid_moves):
+    best_move = None
+    for move in get_valid_move(board, player):
         new_board = np.copy(board)
         make_move(new_board, player, move)
 
-        trans_key = hash(tuple(tuple(row) for row in new_board))
-        if trans_key in trans_table:
-            score = trans_table[trans_key]
-        else:
-            score = -negamax(new_board, -player, depth - 1, -beta, -alpha, trans_table)
-            trans_table[trans_key] = score
+        if move not in killer_moves:
+            killer_moves += [move]
 
-        best_score = max(best_score, score)
+        score, _ = negamax(new_board, -player, depth - 1, -beta, -alpha, killer_moves)
+        score = -score
 
-        alpha = max(alpha, score)
+        if score > alpha:
+            alpha = score
+            best_move = move
+
         if alpha >= beta:
             break
 
-    return best_score
+    return alpha, best_move
 
 
-def get_move_priority(move):
-    # Các nước đi ở giữa bàn cờ có độ ưu tiên cao hơn
-    x, y = move
-    priority = abs(x - 3.5) + abs(y - 3.5)
-
-    # Nếu nước đi góc hoặc cạnh, độ ưu tiên thấp hơn
-    if x == 0 or x == 7 or y == 0 or y == 7:
-        priority -= 1
-
-    return priority
-
-
-def order_moves(moves):
-    ordered_moves = []
-    for move in moves:
-        priority = get_move_priority(move)
-        bisect.insort(ordered_moves, (priority, move))
-    return [move for _, move in ordered_moves]
-
-
-def find_best_move(board, player, depth=5):
-    alpha = -np.inf
-    beta = np.inf
-
-    trans_table = {}
-
-    best_move = None
-    best_score = -np.inf
-
-    valid_moves = get_valid_move(board, player)
-
-    for move in order_moves(valid_moves):
-        new_board = np.copy(board)
-        make_move(new_board, player, move)
-
-        trans_key = hash(tuple(tuple(row) for row in new_board))
-        if trans_key in trans_table:
-            score = trans_table[trans_key]
-        else:
-            score = -negamax(new_board, -player, depth - 1, -beta, -alpha, trans_table)
-            trans_table[trans_key] = score
-
-        if score > best_score:
-            best_score = score
-            best_move = move
-
+def select_move(cur_state, player_to_move, remain_time):
+    _, best_move = negamax(cur_state, player_to_move, 5, -np.inf, np.inf, [])
     return best_move
-
-
-def select_move(cur_state, player_to_move, remain_time=60):
-    return find_best_move(cur_state, player_to_move)

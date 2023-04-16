@@ -5,20 +5,21 @@ import time
 
 def check_game_over(board):
     score = get_score(board)
+    result = (
+        "Tie"
+        if score[1] == score[-1]
+        else "Black Wins"
+        if score[1] > score[-1]
+        else "White Wins"
+    )
 
     # Trường hợp bàn cờ đã được lắp đầy
     if score[1] + score[-1] == 64:
-        return (
-            "Tie"
-            if score[1] == score[-1]
-            else "Black Wins"
-            if score[1] > score[-1]
-            else "White Wins"
-        )
+        return result
 
     # Trường hợp cả hai không có nước đi hợp lệ
     if not get_valid_move(board, 1) and not get_valid_move(board, -1):
-        return "No valid move both. Tie."
+        return "No valid move both. " + result
 
     return None
 
@@ -97,7 +98,7 @@ if __name__ == "__main__":
     player = 1
     turn = input("Choose your color (b or w): ")
     f = open("time.txt", "w")
-    total_agent_time = 0
+    remain_time = 60.0
 
     # Khởi tạo game
     pygame.init()
@@ -129,9 +130,9 @@ if __name__ == "__main__":
                     player = -player
             elif turn == "b" and player == -1 or turn == "w" and player == 1:
                 start_time = time.time()
-                best_move = select_move(board, player)
-                agent_time = round(time.time() - start_time, 6)
-                total_agent_time += agent_time
+                best_move = select_move(board, player, remain_time)
+                agent_time = time.time() - start_time
+                remain_time -= agent_time
                 f.write(str(agent_time) + "\n")
                 if best_move:
                     make_move(board, player, best_move)
@@ -150,5 +151,5 @@ if __name__ == "__main__":
 
     pygame.quit()
 
-    f.write("Total: " + str(round(total_agent_time, 6)) + "\n")
+    f.write("Total: " + str(60.0 - remain_time) + "\n")
     f.close()
