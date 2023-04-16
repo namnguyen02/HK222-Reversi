@@ -69,9 +69,9 @@ if __name__ == "__main__":
                 print("Black" if player == 1 else "White", "has no valid move.")
             player = -player
         elif turn == "b" and player == 1 or turn == "w" and player == -1:
-            start_time = time.time()
+            start_time = time.perf_counter()
             best_move = select_move(board, player, remain_time)
-            agent_time = time.time() - start_time
+            agent_time = time.perf_counter() - start_time
             remain_time -= agent_time
             ft.write(str(agent_time) + "\n")
             if best_move:

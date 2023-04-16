@@ -141,7 +141,7 @@ def corners_captured_heuristic(board, player):
 
 # CÁC HÀM ĐỂ CHỌN NƯỚC ĐI TỐT NHẤT
 def combined_heuristic(board, player):
-    weights = [0.1, 0.3, 0.2]  # Assign weights to each heuristic
+    weights = [0.2, 0.3, 0.2]  # Assign weights to each heuristic
     h1 = parity_heuristic(board, player)
     h2 = corner_heuristic(board, player)
     h3 = corners_captured_heuristic(board, player)
@@ -149,9 +149,21 @@ def combined_heuristic(board, player):
     return combined_h
 
 
+transposition_table = {}
+
+
+def evaluate(board, player):
+    transposition_key = hash(tuple(tuple(row) for row in board))
+    if transposition_key in transposition_table:
+        return transposition_table[transposition_key]
+    score = combined_heuristic(board, player)
+    transposition_table[transposition_key] = score
+    return score
+
+
 def negamax(board, player, depth, alpha, beta, killer_moves):
     if depth == 0 or is_game_over(board):
-        return combined_heuristic(board, player), None
+        return evaluate(board, player), None
 
     best_move = None
     for move in get_valid_move(board, player):
